@@ -1,2 +1,0 @@
-All github changes are done
-Added login page feature by trainee
