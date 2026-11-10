@@ -9,27 +9,30 @@ import AboutPage from './Pages/About'
 import ProjectPage from './Pages/Project'
 import { BrowserRouter } from 'react-router-dom'
 import { Routes, Route } from 'react-router-dom'
+import Mastercard from './mastercard'
+
 
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <BrowserRouter>
-      <App />
-    </BrowserRouter>
-    <StateDemo />
-    <ShowMessage />
-    <Routes>
-      <Route path="./home" element={<HomePage />} />
-      <Route path="./about" element={<AboutPage />} />
-      <Route path="./project" element={<ProjectPage />} />
-      <Route path="./localhost:3000" element={<HomePage />} />
-      <HomePage />
-      <AboutPage />
-      <ProjectPage />
-    </Routes>
+      <Routes>
+        <Route path="/" element={
+          <>
+            <App />
+            <StateDemo />
+            <ShowMessage />
 
-    importBrowserRouter
+          </>
+        }
+        />
+        <Route path="/home" element={<HomePage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/project" element={<ProjectPage />} />
+        <Route path="master" element={<Mastercard />} />
+      </Routes>
+    </BrowserRouter>
 
   </React.StrictMode>
 );

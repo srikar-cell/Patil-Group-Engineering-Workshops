@@ -4,12 +4,17 @@ function StateDemo() {
     const [videoName, setVideoName] = useState("fetching data");
     const [videoLikes, setVideoLikes] = useState(95);
     const [videoCompliment, setVideoCompliment] = useState("");
-
-    // useEffect executes whenever videoLikes changes
+    const [submitbutton, setsubmitbutton] = useState(true);
+    const [submittedCompliment, setSubmittedCompliment] = useState("")
     useEffect(() => {
         console.log("Video Likes updated");
     }, [videoLikes]);
 
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        setSubmittedCompliment(videoCompliment);
+
+    };
     return (
         <>
             <h1>States Demo</h1>
@@ -45,11 +50,20 @@ function StateDemo() {
                     }}
                 />
 
-                <p>You entered: {videoCompliment}</p>
+                {/*<button onClick={() => setsubmitbutton(!submitbutton)}> Submit </button>*/}
+                <button type="button" onClick={() => setSubmittedCompliment(videoCompliment)}> Submit </button>
+                {
+                    submittedCompliment && <p>You entered: {submittedCompliment}</p>
+                }
+                {/*{
+                    !submitbutton && <p>You entered: {videoCompliment}</p>
+                }*/}
+
             </form>
         </>
     );
 }
+
 
 function ShowMessage() {
     const [isVisible, setIsVisible] = useState(true);
