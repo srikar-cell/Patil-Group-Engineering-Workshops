@@ -10,6 +10,7 @@ import ProjectPage from './Pages/Project'
 import { BrowserRouter } from 'react-router-dom'
 import { Routes, Route } from 'react-router-dom'
 import Mastercard from './mastercard'
+import Taskflow from './Pages/Taskflow'
 
 
 
@@ -30,7 +31,8 @@ root.render(
         <Route path="/home" element={<HomePage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/project" element={<ProjectPage />} />
-        <Route path="master" element={<Mastercard />} />
+        <Route path="/master" element={<Mastercard />} />
+        <Route path="/Taskflow" element={<Taskflow />} />
       </Routes>
     </BrowserRouter>
 
