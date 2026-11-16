@@ -193,10 +193,3 @@ curl -X DELETE http://localhost:5000/api/books/b1
 curl http://localhost:5000/api/books/b1
 # → 404 {"error":{"code":"NOT_FOUND","message":"Book b1 not found"}}
 ```
-
----
-
-## 7. Open questions / future changes
-- **Week 4:** move storage to a database. The contract stays the same, only the store changes.
-- **Later:** add `POST /auth/signup` and `POST /auth/login`. Every `/books` route will then need `Authorization: Bearer <token>`, and a missing or invalid token will get a `401 UNAUTHORIZED`.
-- Pagination (`?page=&limit=`) isn't needed yet, but `{ data, count }` leaves room for it.
