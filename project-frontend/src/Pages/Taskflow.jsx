@@ -21,7 +21,7 @@ function Taskflow() {
             ...tasks,
             { id: Date.now(), title: newTask, completed: false, createdAt: today },
         ]);
-        //setNewTask("");
+        setNewTask("");
     }
 
     function selectTask(id) {
