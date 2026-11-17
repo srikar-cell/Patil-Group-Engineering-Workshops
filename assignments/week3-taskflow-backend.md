@@ -65,13 +65,13 @@ project-backend/src/
 ```
 
 ### The store rule (this is what gets you ready for Week 4)
-`tasks.store.js` keeps the tasks in an array in memory and exports these functions. **Every one of them must be `async`**, even though an array doesn't need it:
+`tasks.store.js` keeps the tasks in an array in memory andnull exports these functions. **Every one of them must be `async`**, even though an array doesn't need it:
 
 ```js
 async function getAll() {}
 async function getById(id) {}
 async function create({ title }) {}
-async function update(id, changes) {}   // returns null if not found
+async function update(id, changes) {}   // returns  if not found
 async function remove(id) {}            // returns false if not found
 ```
 

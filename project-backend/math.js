@@ -9,4 +9,3 @@ module.exports = {
     add,
     sub,
 }
-console.log(add(a, b));
