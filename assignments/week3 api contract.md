@@ -80,7 +80,7 @@ If nothing matches, the response is `{ "data": [], "count": 0 }`, **not** a 404.
 
 ---
 
-### 4.3 Get one book
+### 4.3 Get one task
 `GET /tasks/:id`
 
 **200 OK** returns a `tasks`.
