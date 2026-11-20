@@ -1,13 +1,26 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./taskflow.css";
 
 function Taskflow() {
-    const api = "http://localhost:8000/api/tasks"
+    const api = "http://localhost:8000/tasks"
     const [search, setSearch] = useState("");
     const [newTask, setNewTask] = useState("");
     const [selectedId, setSelectedId] = useState(null);
     const [tasks, setTasks] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        fetch(api)
+            .then((res) => {
+                if (!res.ok) throw new Error(`Request failed with status ${res.status}`);
+                return res.json();
+            })
+            .then((data) => setTasks(data))
+            .catch((err) => setError(err.message))
+            .finally(() => setLoading(false));
+    }, [api]);
 
     function addTask() {
         if (newTask.trim() === "") return;
@@ -61,6 +74,9 @@ function Taskflow() {
 
             <div className="card">
                 <h2>List View</h2>
+
+                {loading && <p className="value">Loading tasks...</p>}
+                {error && <p className="value">Could not load tasks: {error}</p>}
 
                 <input
                     className="text-box"
