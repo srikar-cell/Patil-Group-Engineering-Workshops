@@ -3,6 +3,7 @@ import { useState } from "react";
 import "./taskflow.css";
 
 function Taskflow() {
+    const api = "http://localhost:8000/api/tasks"
     const [search, setSearch] = useState("");
     const [newTask, setNewTask] = useState("");
     const [selectedId, setSelectedId] = useState(null);
