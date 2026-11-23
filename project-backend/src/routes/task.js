@@ -25,22 +25,10 @@ router.get('/', (req, res) => {
 
         // Optional search query (?search=...)
         if (req.query.search) {
-<<<<<<< HEAD
-            console.log("working or not", req.query.search);
-            const term = req.query.search.toLowerCase();
-            console.log("working or not term", term);
-            tasks = tasks.filter((t) => t.title.toLowerCase().includes(term));
-
-            console.log("working or not tasks >]:", tasks);
-
-        }
-        console.log("working or not ", res.json(tasks));
-=======
             tasks = tasks.filter((t) =>
                 t.title.toLowerCase().includes(req.query.search.toLowerCase())
             );
         }
->>>>>>> b9bbe5884d25bdadb7629e2e420201615afad2fc
 
         return res.json(tasks);
     } catch (error) {
@@ -72,7 +60,7 @@ router.post('/', (req, res) => {
     try {
         const { id, title, completed } = req.body;
 
-        if (!title || title.trim() === "") {
+        if (!title && title.trim() === "") {
             return res.status(400).json({ error: "title is required" });
         }
 
@@ -95,7 +83,7 @@ router.post('/', (req, res) => {
         const newTask = {
             id: taskId,
             title: title.trim(),
-            completed: Boolean(completed) || false,
+            completed: Boolean(completed) || true,
             createdAt: new Date().toISOString()
         };
 

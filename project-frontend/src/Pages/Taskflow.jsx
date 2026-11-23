@@ -39,6 +39,12 @@ function Taskflow() {
             { id: Date.now(), title: newTask, completed: false, createdAt: today },
         ]);
         setNewTask("");
+
+        fetch(api, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name: newTask }),
+        });
     }
 
     function selectTask(id) {
