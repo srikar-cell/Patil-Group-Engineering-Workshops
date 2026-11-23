@@ -1,2 +1,0 @@
-All github changes are done
-Updated database schema by trainer

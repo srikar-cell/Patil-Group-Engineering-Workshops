@@ -1,0 +1,20 @@
+UseState(submit button)
+
+working box where it is going to visible 
+submit button 
+hide message button
+current state (submitbutton-True)
+click button ( submitbutton -false)
+if submitbutton is true (message is going to display) and if submitbutton is false (message is not going to display)
+
+Routing
+
+<Routes>
+        <Route path="/home" element={<HomePage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/project" element={<ProjectPage />} />
+      </Routes>
+
+Creating the routes to home page, about page and project page.
+
+creating the default page to routing

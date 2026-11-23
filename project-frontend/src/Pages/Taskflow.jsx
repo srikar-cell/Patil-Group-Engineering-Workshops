@@ -23,7 +23,7 @@ function Taskflow() {
             .then((data) => setTasks(data))
             .catch((err) => setError(err.message))
             .finally(() => setLoading(false));
-    }, [api, search]);
+    }, [api]);
 
     function addTask() {
         if (newTask.trim() === "") return;
@@ -96,25 +96,27 @@ function Taskflow() {
                     <button className="add-btn" onClick={addTask}>Add</button>
                 </div>
 
-                {tasks.map((task) => (
-                    <div className="task" key={task.id}>
-                        <div>
-                            <input
-                                type="checkbox"
-                                checked={selectedId === task.id}
-                                onChange={() => selectTask(task.id)}
-                            />
-                            <span className={task.completed ? "title done" : "title"}>
-                                {task.title}
-                            </span>
+                {
+                    tasks.map((task) => (
+                        <div className="task" key={task.id}>
+                            <div>
+                                <input
+                                    type="checkbox"
+                                    checked={selectedId === task.id}
+                                    onChange={() => selectTask(task.id)}
+                                />
+                                <span className={task.completed ? "title done" : "title"}>
+                                    {task.title}
+                                </span>
+                            </div>
+                            <div className="task-buttons">
+                                <button onClick={() => editTask(task.id, task.title)}>Edit</button>
+                                <button onClick={() => deleteTask(task.id)}>Delete</button>
+                            </div>
                         </div>
-                        <div className="task-buttons">
-                            <button onClick={() => editTask(task.id, task.title)}>Edit</button>
-                            <button onClick={() => deleteTask(task.id)}>Delete</button>
-                        </div>
-                    </div>
-                ))}
-            </div>
+                    ))
+                }
+            </div >
 
             {selectedTask && (
                 <div className="card">
@@ -136,8 +138,9 @@ function Taskflow() {
                         <button onClick={() => deleteTask(selectedTask.id)}>Delete</button>
                     </div>
                 </div>
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 }
 
