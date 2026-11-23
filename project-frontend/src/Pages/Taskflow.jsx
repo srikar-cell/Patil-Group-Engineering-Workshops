@@ -98,6 +98,7 @@ function Taskflow() {
                         placeholder="Add a new task..."
                         value={newTask}
                         onChange={(e) => setNewTask(e.target.value)}
+                        onKeyDown={addTask}
                     />
                     <button className="add-btn" onClick={addTask}>Add</button>
                 </div>
