@@ -11,8 +11,11 @@ function Taskflow() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    // Search is handled by the backend (GET /tasks?search=...)
     useEffect(() => {
-        fetch(api)
+        setLoading(true);
+        setError(null);
+        fetch(`${api}?search=${encodeURIComponent(search)}`)
             .then((res) => {
                 if (!res.ok) throw new Error(`Request failed with status ${res.status}`);
                 return res.json();
@@ -60,10 +63,6 @@ function Taskflow() {
         if (selectedId === id) setSelectedId(null);
     }
 
-    const filteredTasks = tasks.filter((t) =>
-        t.title.toLowerCase().includes(search.toLowerCase())
-    );
-
     const selectedTask = tasks.find((t) => t.id === selectedId);
 
     return (
@@ -97,7 +96,7 @@ function Taskflow() {
                     <button className="add-btn" onClick={addTask}>Add</button>
                 </div>
 
-                {filteredTasks.map((task) => (
+                {tasks.map((task) => (
                     <div className="task" key={task.id}>
                         <div>
                             <input
