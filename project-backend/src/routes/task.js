@@ -25,22 +25,10 @@ router.get('/', (req, res) => {
 
         // Optional search query (?search=...)
         if (req.query.search) {
-<<<<<<< HEAD
-            console.log("working or not", req.query.search);
-            const term = req.query.search.toLowerCase();
-            console.log("working or not term", term);
-            tasks = tasks.filter((t) => t.title.toLowerCase().includes(term));
-
-            console.log("working or not tasks >]:", tasks);
-
-        }
-        console.log("working or not ", res.json(tasks));
-=======
             tasks = tasks.filter((t) =>
                 t.title.toLowerCase().includes(req.query.search.toLowerCase())
             );
         }
->>>>>>> b9bbe5884d25bdadb7629e2e420201615afad2fc
 
         return res.json(tasks);
     } catch (error) {
