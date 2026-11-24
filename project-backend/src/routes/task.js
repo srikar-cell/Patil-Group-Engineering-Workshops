@@ -25,9 +25,8 @@ router.get('/', (req, res) => {
 
         // Optional search query (?search=...)
         if (req.query.search) {
-            tasks = tasks.filter((t) =>
-                t.title.toLowerCase().includes(req.query.search.toLowerCase())
-            );
+            const term = req.query.search.trim().toLowerCase();
+            tasks = tasks.filter((t) => t.title.toLowerCase().includes(term));
         }
 
         return res.json(tasks);
