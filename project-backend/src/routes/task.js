@@ -59,7 +59,7 @@ router.post('/', (req, res) => {
     try {
         const { id, title, completed } = req.body;
 
-        if (!title || title.trim() === "") {
+        if (!title && title.trim() === "") {
             return res.status(400).json({ error: "title is required" });
         }
 
@@ -82,7 +82,7 @@ router.post('/', (req, res) => {
         const newTask = {
             id: taskId,
             title: title.trim(),
-            completed: Boolean(completed) || false,
+            completed: Boolean(completed) || true,
             createdAt: new Date().toISOString()
         };
 
