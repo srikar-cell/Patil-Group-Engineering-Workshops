@@ -14,6 +14,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/users', userRoutes);
 app.use('/tasks', taskRoutes);
+app.use('/api/tasks', taskRoutes);
 
 
 app.listen(PORT, () => console.log(`server started on port ${PORT}`));

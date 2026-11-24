@@ -1,55 +1,127 @@
-import React from "react";
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./taskflow.css";
 
 function Taskflow() {
-    const api = "http://localhost:8000/api/tasks"
+    // Backend API base URL
+    const API_URL = "http://localhost:8000/api/tasks";
+
+    const [tasks, setTasks] = useState([]);
     const [search, setSearch] = useState("");
     const [newTask, setNewTask] = useState("");
     const [selectedId, setSelectedId] = useState(null);
-    const [tasks, setTasks] = useState([]);
 
-    function addTask() {
+    // 1. GET task
+    const fetchTasks = async (searchQuery = "") => {
+        try {
+            const url = searchQuery
+                ? `${API_URL}?search=${encodeURIComponent(searchQuery)}`
+                : API_URL;
+
+            const response = await fetch(url);
+            const data = await response.json();
+            setTasks(data);
+        } catch (error) {
+            console.error("Error fetching tasks:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchTasks();
+    }, []);
+
+
+    const handleSearch = (e) => {
+        const query = e.target.value;
+        setSearch(query);
+        fetchTasks(query);
+    };
+
+    // 2. Add new task
+    const addTask = async () => {
         if (newTask.trim() === "") return;
 
-        const today = new Date().toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-        });
+        try {
+            const response = await fetch(API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ title: newTask.trim() }),
+            });
 
-        setTasks([
-            ...tasks,
-            { id: Date.now(), title: newTask, completed: false, createdAt: today },
-        ]);
-        setNewTask("");
-    }
-
-    function selectTask(id) {
-        if (selectedId === id) {
-            setSelectedId(null);
-        } else {
-            setSelectedId(id);
+            if (response.ok) {
+                const createdTask = await response.json();
+                setTasks((prevTasks) => [...prevTasks, createdTask]);
+                setNewTask("");
+            }
+        } catch (error) {
+            console.error("Error adding task:", error);
         }
-    }
-    function toggleCompleted(id) {
-        setTasks(tasks.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t)));
-    }
+    };
 
-    function editTask(id, oldTitle) {
+    // 3. PUT (Edit task title)
+    const editTask = async (id, oldTitle) => {
         const title = prompt("Edit task:", oldTitle);
         if (title === null || title.trim() === "") return;
-        setTasks(tasks.map((t) => (t.id === id ? { ...t, title: title } : t)));
-    }
 
-    function deleteTask(id) {
-        setTasks(tasks.filter((t) => t.id !== id));
-        if (selectedId === id) setSelectedId(null);
-    }
+        try {
+            const response = await fetch(`${API_URL}/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ title: title.trim() }),
+            });
 
-    const filteredTasks = tasks.filter((t) =>
-        t.title.toLowerCase().includes(search.toLowerCase())
-    );
+            if (response.ok) {
+                const updatedTask = await response.json();
+                setTasks((prevTasks) =>
+                    prevTasks.map((t) => (t.id === id ? updatedTask : t))
+                );
+            }
+        } catch (error) {
+            console.error("Error updating task:", error);
+        }
+    };
+
+    // 4. PUT task
+    const toggleCompleted = async (id) => {
+        const currentTask = tasks.find((t) => t.id === id);
+        if (!currentTask) return;
+
+        try {
+            const response = await fetch(`${API_URL}/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ completed: !currentTask.completed }),
+            });
+
+            if (response.ok) {
+                const updatedTask = await response.json();
+                setTasks((prevTasks) =>
+                    prevTasks.map((t) => (t.id === id ? updatedTask : t))
+                );
+            }
+        } catch (error) {
+            console.error("Error toggling task completion:", error);
+        }
+    };
+
+    // 5. DELETE task
+    const deleteTask = async (id) => {
+        try {
+            const response = await fetch(`${API_URL}/${id}`, {
+                method: "DELETE",
+            });
+
+            if (response.ok) {
+                setTasks((prevTasks) => prevTasks.filter((t) => t.id !== id));
+                if (selectedId === id) setSelectedId(null);
+            }
+        } catch (error) {
+            console.error("Error deleting task:", error);
+        }
+    };
+
+    const selectTask = (id) => {
+        setSelectedId((prev) => (prev === id ? null : id));
+    };
 
     const selectedTask = tasks.find((t) => t.id === selectedId);
 
@@ -61,13 +133,12 @@ function Taskflow() {
 
             <div className="card">
                 <h2>List View</h2>
-
                 <input
                     className="text-box"
                     type="text"
                     placeholder="Search tasks..."
                     value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+                    onChange={handleSearch}
                 />
 
                 <div className="add-row">
@@ -77,11 +148,14 @@ function Taskflow() {
                         placeholder="Add a new task..."
                         value={newTask}
                         onChange={(e) => setNewTask(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && addTask()}
                     />
-                    <button className="add-btn" onClick={addTask}>Add</button>
+                    <button className="add-btn" onClick={addTask}>
+                        Add
+                    </button>
                 </div>
 
-                {filteredTasks.map((task) => (
+                {tasks.map((task) => (
                     <div className="task" key={task.id}>
                         <div>
                             <input
@@ -101,6 +175,7 @@ function Taskflow() {
                 ))}
             </div>
 
+            {/* DETAIL VIEW */}
             {selectedTask && (
                 <div className="card">
                     <h2>Detail View</h2>
@@ -109,10 +184,20 @@ function Taskflow() {
                     <p className="value">{selectedTask.title}</p>
 
                     <p className="label">Status</p>
-                    <p className="value">{selectedTask.completed ? "Completed" : "Pending"}</p>
+                    <p className="value">
+                        {selectedTask.completed ? "Completed" : "Pending"}
+                    </p>
 
                     <p className="label">Created</p>
-                    <p className="value">{selectedTask.createdAt}</p>
+                    <p className="value">
+                        {selectedTask.createdAt
+                            ? new Date(selectedTask.createdAt).toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                            })
+                            : "N/A"}
+                    </p>
 
                     <div className="task-buttons">
                         <button onClick={() => toggleCompleted(selectedTask.id)}>
@@ -126,4 +211,4 @@ function Taskflow() {
     );
 }
 
-export default Taskflow
+export default Taskflow;
