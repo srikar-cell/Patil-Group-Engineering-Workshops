@@ -1,155 +1,157 @@
-const express = require('express');
-const fs = require('fs');
-const path = require('path');
-
+const express = require("express");
 const router = express.Router();
-const filePath = path.join(__dirname, '../data/tasks.json');
 
-const getTasks = () => {
+const {
+    db,
+    getSelectAllTasksQuery,
+    getSearchTasksQuery,
+    getSelectTaskByIdQuery,
+    getInsertTaskQuery,
+    getUpdateTaskQuery,
+    getDeleteTaskQuery
+} = require("../migrate");
+
+const formatTask = (t) => ({
+    ...t,
+    completed: Boolean(t.completed)
+});
+
+// 1. GET Task (with search)
+router.get("/", async (req, res) => {
     try {
-        const data = fs.readFileSync(filePath, 'utf-8');
-        return JSON.parse(data || '[]');
-    } catch (error) {
-        return [];
-    }
-};
+        const { search } = req.query;
 
-const saveTasks = (tasks) => {
-    fs.writeFileSync(filePath, JSON.stringify(tasks, null, 2), 'utf-8');
-};
+        let sql;
+        let values = [];
 
-// 1. Get all tasks
-router.get('/', (req, res) => {
-    try {
-        let tasks = getTasks();
-
-        // Optional search query (?search=...)
-        if (req.query.search) {
-            const term = req.query.search.trim().toLowerCase();
-            tasks = tasks.filter((t) => t.title.toLowerCase().includes(term));
+        if (search) {
+            sql = getSearchTasksQuery();
+            values.push(`%${search.trim()}%`);
+        } else {
+            sql = getSelectAllTasksQuery();
         }
 
-        return res.json(tasks);
+        const [tasks] = await db.execute(sql, values);
+        return res.status(200).json(tasks.map(formatTask));
     } catch (error) {
-        console.error("something went wrong please check", error);
-        return res.status(500).json({ error: "something went wrong" });
+        console.error("GET /tasks error:", error);
+        return res.status(500).json({ error: error.message });
     }
 });
 
-// 2. Get single task
-router.get('/:id', (req, res) => {
+// 2. GET Single Task by ID
+router.get("/:id", async (req, res) => {
     try {
-        const id = Number(req.params.id);
-        const tasks = getTasks();
-        const task = tasks.find((t) => t.id === id);
+        const { id } = req.params;
+        const sql = getSelectTaskByIdQuery();
+        const [tasks] = await db.execute(sql, [id]);
 
-        if (task === undefined) {
+        if (tasks.length === 0) {
             return res.status(404).json({ error: "task not found" });
         }
 
-        return res.json(task);
+        return res.status(200).json(formatTask(tasks[0]));
     } catch (error) {
-        console.error("something went wrong please check", error);
-        return res.status(500).json({ error: "something went wrong" });
+        console.error("GET /tasks/:id error:", error);
+        return res.status(500).json({ error: error.message });
     }
 });
 
-// 3. Create a new task
-router.post('/', (req, res) => {
+// 3. POST New Task
+router.post("/", async (req, res) => {
     try {
-        const { id, title, completed } = req.body;
+        const { title } = req.body;
 
-        if (!title && title.trim() === "") {
+        if (!title || !title.trim()) {
             return res.status(400).json({ error: "title is required" });
         }
 
-        const tasks = getTasks();
+        const insertSql = getInsertTaskQuery();
+        const [result] = await db.execute(insertSql, [title.trim()]);
 
-        let taskId;
-        if (id !== undefined && id !== null && id !== "") {
-            taskId = Number(id);
-            if (Number.isNaN(taskId)) {
-                return res.status(400).json({ error: "id must be a valid number" });
-            }
-            const exists = tasks.some((t) => t.id === taskId);
-            if (exists) {
-                return res.status(409).json({ error: `Task with id ${taskId} already exists` });
-            }
-        } else {
-            taskId = Date.now();
-        }
+        const selectSql = getSelectTaskByIdQuery();
+        const [tasks] = await db.execute(selectSql, [result.insertId]);
 
-        const newTask = {
-            id: taskId,
-            title: title.trim(),
-            completed: Boolean(completed) || true,
-            createdAt: new Date().toISOString()
-        };
-
-        tasks.push(newTask);
-        saveTasks(tasks);
-
-        return res.status(201).json(newTask);
+        return res.status(201).json(formatTask(tasks[0]));
     } catch (error) {
-        console.error("something went wrong please check", error);
-        return res.status(500).json({ error: "something went wrong" });
+        console.error("POST /tasks error:", error);
+        return res.status(500).json({ error: error.message });
     }
 });
 
-// 4. Update task
-const updateTask = (req, res) => {
+// 4. PUT Update Task Title 
+router.put("/:id", async (req, res) => {
     try {
-        const id = Number(req.params.id || req.body.id);
-
-        if (!id || Number.isNaN(id)) {
-            return res.status(400).json({
-                error: "Task ID is required in the URL (e.g. /tasks/:id) or in the request body ({ id })"
-            });
-        }
-
-        const tasks = getTasks();
-        const task = tasks.find((t) => t.id === id);
-
-        if (task === undefined) {
-            return res.status(404).json({ error: "task not found" });
-        }
-
+        const { id } = req.params;
         const { title, completed } = req.body;
-        if (title !== undefined) task.title = title.trim();
-        if (completed !== undefined) task.completed = completed;
-        task.updatedAt = new Date().toISOString();
 
-        saveTasks(tasks);
-        return res.json(task);
-    } catch (error) {
-        console.error("something went wrong please check", error);
-        return res.status(500).json({ error: "something went wrong" });
-    }
-};
+        const updates = [];
+        const values = [];
 
-// Supports both PUT and PATCH, with :id in URL or id in body
-router.put('/:id', updateTask);
-router.patch('/:id', updateTask);
-router.put('/', updateTask);
+        if (title !== undefined) {
+            if (typeof title !== "string" || !title.trim()) {
+                return res.status(400).json({ error: "valid title is required" });
+            }
+            updates.push("title = ?");
+            values.push(title.trim());
+        }
 
-// 5. Delete task
-router.delete('/:id', (req, res) => {
-    try {
-        const id = Number(req.params.id);
-        const tasks = getTasks();
-        const index = tasks.findIndex((t) => t.id === id);
+        if (completed !== undefined) {
+            if (typeof completed !== "boolean") {
+                return res.status(400).json({ error: "completed must be true or false" });
+            }
+            updates.push("completed = ?");
+            values.push(completed ? 1 : 0);
+        }
 
-        if (index === -1) {
+        if (updates.length === 0) {
+            return res.status(400).json({ error: "no fields provided for update" });
+        }
+
+        values.push(id);
+
+        const updateSql = getUpdateTaskQuery(updates);
+        const [result] = await db.execute(updateSql, values);
+
+        if (result.affectedRows === 0) {
             return res.status(404).json({ error: "task not found" });
         }
 
-        tasks.splice(index, 1);
-        saveTasks(tasks);
+        const selectSql = getSelectTaskByIdQuery();
+        const [tasks] = await db.execute(selectSql, [id]);
 
-        return res.status(204).send();
+        return res.status(200).json(formatTask(tasks[0]));
     } catch (error) {
-        console.error("something went wrong please check", error);
-        return res.status(500).json({ error: "something went wrong" });
+        console.error("PUT /tasks/:id error:", error);
+        return res.status(500).json({ error: error.message });
+    }
+});
+
+// Fallback PUT / with id in body
+router.put("/", async (req, res) => {
+    const { id } = req.body;
+    if (!id) {
+        return res.status(400).json({ error: "task id is required for update" });
+    }
+    req.params.id = id;
+    return router.handle(req, res);
+});
+
+// 5. DELETE Task
+router.delete("/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const deleteSql = getDeleteTaskQuery();
+        const [result] = await db.execute(deleteSql, [id]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "task not found" });
+        }
+
+        return res.status(200).json({ message: "Task deleted successfully" });
+    } catch (error) {
+        console.error("DELETE /tasks/:id error:", error);
+        return res.status(500).json({ error: error.message });
     }
 });
 

@@ -148,9 +148,8 @@ function Taskflow() {
                         placeholder="Add a new task..."
                         value={newTask}
                         onChange={(e) => setNewTask(e.target.value)}
-                        onKeyDown={addTask}
                     />
-                    <button className="add-btn" onClick={addTask}>
+                    < button className="add-btn" onClick={addTask} >
                         Add
                     </button>
                 </div>
@@ -176,38 +175,40 @@ function Taskflow() {
             </div>
 
             {/* DETAIL VIEW */}
-            {selectedTask && (
-                <div className="card">
-                    <h2>Detail View</h2>
+            {
+                selectedTask && (
+                    <div className="card">
+                        <h2>Detail View</h2>
 
-                    <p className="label">Title</p>
-                    <p className="value">{selectedTask.title}</p>
+                        <p className="label">Title</p>
+                        <p className="value">{selectedTask.title}</p>
 
-                    <p className="label">Status</p>
-                    <p className="value">
-                        {selectedTask.completed ? "Completed" : "Pending"}
-                    </p>
+                        <p className="label">Status</p>
+                        <p className="value">
+                            {selectedTask.completed ? "Completed" : "Pending"}
+                        </p>
 
-                    <p className="label">Created</p>
-                    <p className="value">
-                        {selectedTask.createdAt
-                            ? new Date(selectedTask.createdAt).toLocaleDateString("en-US", {
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                            })
-                            : "N/A"}
-                    </p>
+                        <p className="label">Created</p>
+                        <p className="value">
+                            {selectedTask.createdAt
+                                ? new Date(selectedTask.createdAt).toLocaleDateString("en-US", {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                })
+                                : "N/A"}
+                        </p>
 
-                    <div className="task-buttons">
-                        <button onClick={() => toggleCompleted(selectedTask.id)}>
-                            {selectedTask.completed ? "Mark as Pending" : "Mark as Completed"}
-                        </button>
-                        <button onClick={() => deleteTask(selectedTask.id)}>Delete</button>
+                        <div className="task-buttons">
+                            <button onClick={() => toggleCompleted(selectedTask.id)}>
+                                {selectedTask.completed ? "Mark as Pending" : "Mark as Completed"}
+                            </button>
+                            <button onClick={() => deleteTask(selectedTask.id)}>Delete</button>
+                        </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 }
 
